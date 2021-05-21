@@ -13,7 +13,7 @@ if nargin < 2
 end
 %input error checking
 if isempty(wn) || wn >= 1 || wn <= 0
-    warning('data not filtered')
+    %warning('data not filtered')
     filtdata = platedata;
     return
 end

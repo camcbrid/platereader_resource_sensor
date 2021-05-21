@@ -10,22 +10,22 @@ end
 
 %normalize fluorescence data based on growth rate or by number of cells (OD)
 cellnames = fieldnames(instruct);
+
+outstruct = instruct;
 %loop through cell names
 for k = 1:length(cellnames)
     
     data = instruct.(cellnames{k});
     ODfield = data.ODfield{1};
-    dataout = data;
+    ODfilt = movmean(data.(ODfield),7);
     
     %props = fieldnames(instruct.(cellnames{k}));
     for ii = 1:length(normfields)
         %loop through properties of each cell
-        if isprop(data,normfields{ii})
-            %if fluorescence data, normalize by growth rate and OD
-            %normalize FP per cell based on OD
-            dataout.([normfields{ii},'OD']) = data.(normfields{ii})./data.(ODfield);
+        if isprop(data,normfields{ii}) && ~isempty(data.(normfields{ii}))
+            %normalize per cell based on OD
+            outstruct.(cellnames{k}).([normfields{ii},'OD']) = ...
+                data.(normfields{ii})./ODfilt;
         end
     end
-    %copy to output
-    outstruct.(cellnames{k}) = dataout;
 end

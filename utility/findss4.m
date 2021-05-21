@@ -1,4 +1,4 @@
-function outstruct = findss4(instruct,timestruct,datafields,avefun,ploton,figh)
+function outstruct = findss4(instruct,steadystatestruct,datafields,avefun,ploton,figh)
 %outstruct = findss3(instruct,timestruct,datafields,avefun,ploton,figh)
 %average values over a user specificed interval
 
@@ -10,7 +10,7 @@ if nargin < 4 || isempty(avefun)
     avefun = @mean;       %or @median
 end
 
-cellnames = fieldnames(timestruct);
+cellnames = intersect(fieldnames(steadystatestruct),fieldnames(instruct),'stable');
 
 %setup plot
 if ploton
@@ -36,19 +36,27 @@ for jj = 1:length(cellnames)
         if isfield(instruct,cellnames{jj})
             %get indicies for range in steady state window
             time = instruct.(cellnames{jj}).time;
-            tmin = min(timestruct.(cellnames{jj}));
-            tmax = max(timestruct.(cellnames{jj}));
+            tmin = min(steadystatestruct.(cellnames{jj}));
+            tmax = max(steadystatestruct.(cellnames{jj}));
             [~,indmin] = min(abs(time - tmin));
             [~,indmax] = min(abs(time - tmax));
             
             %get data from time range
             tmp = instruct.(cellnames{jj}).(datafields{ii})(indmin:indmax,:);
             %apply average/median function to each sample
-            ss = avefun(tmp);
+            ss = mean(tmp);
+            %avevar = var(tmp,0,1);
+            %samplestd = std(ss)./sqrt(numel(ss))
+            %z = sqrt(sum(avevar))/numel(ss)
             
             %store steady state data in module
-            moduledata.(datafields{ii}) = avefun(ss);
-            moduledata.([datafields{ii},'std']) = std(ss)./sqrt(numel(ss));
+            moduledata.(datafields{ii}) = avefun(ss,'omitnan');
+            %sqrt(sum(avevar))/numel(ss);
+            moduledata.([datafields{ii},'std']) = sqrt(var(ss,'omitnan')./...
+                nnz(~isnan(ss)));
+            %moduledata.(datafields{ii}) = ss;
+            %moduledata.([datafields{ii},'std']) = 0;%sqrt(var(ss)./numel(ss));
+            
             
             %store data for histogram plots
             data{ii}{jj} = tmp(:);
@@ -59,6 +67,9 @@ for jj = 1:length(cellnames)
     end
     %output
     outstruct.(cellnames{jj}) = moduledata;
+    %copy over growth rate
+    outstruct.(cellnames{jj}).growthrate = instruct.(cellnames{jj}).growthrate;
+    outstruct.(cellnames{jj}).growthratestd = instruct.(cellnames{jj}).growthratestd;
 end
 
 %plot

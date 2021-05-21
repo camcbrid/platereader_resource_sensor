@@ -6,21 +6,23 @@ classdef RSmodule
         BFPdiffOD
         GFPdiffOD
         RFPdiffOD
+        YFPdiffOD
         BFPdiffODstd
         GFPdiffODstd
         RFPdiffODstd
+        YFPdiffODstd
         y
         ystd
-        Q
-        Qls
         perturbname
         perturby
         perturbystd
+        predperturby
+        predperturbystd
+        Q
+        Qstd
         S
         Sstd
-        Qstd
-        Qlsstd
-        isResourceSensor logical = false
+        isResourceSensor logical
         isalone logical
         growthrate
         growthratestd

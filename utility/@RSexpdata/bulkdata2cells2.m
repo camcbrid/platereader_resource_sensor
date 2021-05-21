@@ -17,7 +17,13 @@ end
 %init structs
 cellout = struct;
 cellnames = fieldnames(indstruct);
-FPfields = platedata.FPfields;
+FPfields0 = platedata.FPfields;
+%check to make sure FP fields aren't empty
+inds = false(length(FPfields0),1);
+for m = 1:length(FPfields0)
+    inds(m) = ~isempty(platedata.(FPfields0{m}));
+end
+FPfields = FPfields0(inds);
 ODfields = platedata.ODfield;
 datafields = fieldnames(platedata);
 
@@ -32,7 +38,7 @@ for ii = 1:length(cellnames)
             tmp = permute(platedata.(datafields{jj}),[3,1,2]);   %put time field first
             data = zeros(numsamples,size(indstruct.(cellnames{ii}),1));
             %loop through each sample repeat
-            for k = 1:length(indstruct.(cellnames{ii}))
+            for k = 1:size(indstruct.(cellnames{ii}),1)
                 %add data into array
                 data(:,k) = tmp(:,indstruct.(cellnames{ii})(k,1),indstruct.(cellnames{ii})(k,2));
             end
@@ -45,5 +51,6 @@ for ii = 1:length(cellnames)
     end
     %output into struct of experimental conditions
     celldata.samplename = cellnames{ii};
+    celldata.inducerconc = cellnames{ii};
     cellout.(cellnames{ii}) = celldata;
 end
